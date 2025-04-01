@@ -3,8 +3,6 @@ import { Typography } from "antd";
 
 const { Text } = Typography;
 
-// const { Text } = Typography;
-
 type CardProps = {
   title: string | undefined;
   image: string | undefined;
