@@ -1,1 +1,13 @@
 @import "tailwindcss";
+
+@font-face {
+  font-family: "HachiMaruPop";
+  font-display: swap;
+  src: url("./assets/font/HachiMaruPop-Regular.ttf") format("truetype");
+}
+
+@theme {
+  --font-pop: "HachiMaruPop";
+  --color-gray: oklch(0.86 0 0);
+  --color-main: oklch(0.19 0 0);
+}
