@@ -11,3 +11,8 @@
   --color-gray: oklch(0.86 0 0);
   --color-main: oklch(0.19 0 0);
 }
+
+#root {
+  height: 100vh;
+  width: 100vw;
+}
