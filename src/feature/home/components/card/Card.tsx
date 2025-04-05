@@ -27,7 +27,7 @@ const Card = ({ title, image }: CardProps) => {
 
   return (
     <div className="w-40 cursor-pointer">
-      <div className="size-40" onClick={() => setIsModalOpen(true)}>
+      <div className="size-40 flex items-center justify-center" onClick={() => setIsModalOpen(true)}>
         <img src={imageUrl} alt="" sizes="160" loading="lazy" />
       </div>
       <div className="text-center">
