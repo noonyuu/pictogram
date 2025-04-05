@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import {
   AppstoreOutlined,
@@ -7,12 +8,11 @@ import {
 import { MenuProps } from "antd";
 
 import { HomePage } from "@/feature/home/pages";
-import { UpLoadPage, AdminHomePage } from "@/feature/admin/pages";
+import { UpLoadPage, AdminHomePage, LoginPage } from "@/feature/admin/pages";
 import NotFound from "@/component/notfound";
 import { AuthProvider } from "@/feature/admin/components/AuthProvider";
 import RequireAuth from "@/feature/admin/components/RequireAuth";
 import Header from "@/component/header";
-import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/feature/admin/hook/useAuth";
 
 const routes = [
@@ -24,6 +24,11 @@ const routes = [
   {
     path: "/admin/home",
     Component: AdminHomePage,
+    isProtected: true,
+  },
+  {
+    path: "/admin/login",
+    Component: LoginPage,
     isProtected: false,
   },
   {
@@ -111,11 +116,11 @@ const AppContent = () => {
 
 const AppRoutes = () => {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
         <AppContent />
-      </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 };
 
