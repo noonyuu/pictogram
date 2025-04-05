@@ -1,13 +1,17 @@
 import { createContext } from "react";
 
-type AuthContextType = {
+interface AuthContextType {
   isAuthenticated: boolean;
+  isAdmin: boolean;
   login: () => void;
   logout: () => void;
-};
+  setIsAdmin: (isAdmin: boolean) => void;
+}
 
 export const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
+  isAdmin: false,
   login: () => {},
   logout: () => {},
+  setIsAdmin: () => {},
 });

@@ -1,3 +1,4 @@
+import { useAuth } from "@/feature/admin/hook/useAuth";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { Dropdown, Typography } from "antd";
 import type { MenuProps } from "antd";
@@ -11,6 +12,7 @@ type HeaderProps = {
   setIsMenuOpen: (open: boolean) => void; // headerのメニューの切り替え
   menuItems: MenuItem[]; // メニューの項目
   onCategorySelect: (key: string) => void; // カテゴリを選択した時の処理(カテゴリーのステートを更新してる)
+  // isAdmin: boolean;
 };
 
 const Header = ({
@@ -18,7 +20,10 @@ const Header = ({
   setIsMenuOpen,
   menuItems,
   onCategorySelect,
+  // isAdmin
 }: HeaderProps) => {
+  // 管理者かどうか
+  const { isAdmin } = useAuth();
   // headerのメニューの切り替え
   const handleOpenChange = (open: boolean) => {
     setIsMenuOpen(open);
@@ -34,18 +39,20 @@ const Header = ({
       <div className="ml-2 grow">
         <Title className="font-pop! m-0! mb-2!">ピクトグラム</Title>
       </div>
-      <div className="lg:hidden">
-        <Dropdown
-          menu={{ items: menuItems, onClick: handleMenuClick }}
-          trigger={["click"]}
-          onOpenChange={handleOpenChange}
-          open={isMenuOpen}
-        >
-          <button className="mr-4 align-middle text-2xl leading-none">
-            {isMenuOpen ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-          </button>
-        </Dropdown>
-      </div>
+      {!isAdmin && (
+        <div className="lg:hidden">
+          <Dropdown
+            menu={{ items: menuItems, onClick: handleMenuClick }}
+            trigger={["click"]}
+            onOpenChange={handleOpenChange}
+            open={isMenuOpen}
+          >
+            <button className="mr-4 align-middle text-2xl leading-none">
+              {isMenuOpen ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            </button>
+          </Dropdown>
+        </div>
+      )}
     </header>
   );
 };
