@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   AppstoreOutlined,
   CarOutlined,
@@ -14,121 +14,122 @@ type HomePageProps = {
   onCategorySelect: (key: string) => void;
 };
 
+// 画像データの型
+type ImageItem = {
+  id: number;
+  title: string;
+  category: string;
+  image: string;
+};
+
+// アイコンとタイトルのマッピング
+const ICON_MAP: Record<string, React.ReactNode> = {
+  all: <AppstoreOutlined />,
+  交通: <CarOutlined />,
+  sports: <CoffeeOutlined />,
+  施設: <CoffeeOutlined />,
+  nature: <CoffeeOutlined />,
+};
+
+const TITLE_MAP: Record<string, string> = {
+  all: "すべて",
+  交通: "交通",
+  sports: "スポーツ",
+  施設: "施設",
+  nature: "自然",
+};
+
 const HomePage = ({ selectedCategoryKey, onCategorySelect }: HomePageProps) => {
-  const categories = [
-    { key: "すべて", title: "すべて", icon: <AppstoreOutlined />, count: 12 },
-    { key: "交通", title: "交通", icon: <CarOutlined />, count: 3 },
-    { key: "スポーツ", title: "スポーツ", icon: <CoffeeOutlined />, count: 3 },
-    { key: "施設", title: "施設", icon: <CoffeeOutlined />, count: 3 },
-    { key: "自然", title: "自然", icon: <CoffeeOutlined />, count: 3 },
-  ];
+  const [images, setImages] = useState<ImageItem[]>([]);
+  const [categories, setCategories] = useState<
+    { key: string; title: string; icon: React.ReactNode; count: number }[]
+  >([]);
 
-  const pictograms = useMemo(
-    () => [
-      {
-        id: 1,
-        title: "自動車",
-        category: "交通",
-        image: "car",
-      },
-      {
-        id: 2,
-        title: "自転車",
-        category: "交通",
-        image: "bicycle",
-      },
-      {
-        id: 3,
-        title: "電車",
-        category: "交通",
-        image: "train",
-      },
-      {
-        id: 4,
-        title: "サッカー",
-        category: "スポーツ",
-        image: "soccer",
-      },
-      {
-        id: 5,
-        title: "野球",
-        category: "スポーツ",
-        image: "baseball",
-      },
-      {
-        id: 6,
-        title: "水泳",
-        category: "スポーツ",
-        image: "swimming",
-      },
-      {
-        id: 7,
-        title: "トイレ",
-        category: "施設",
-        image: "toilet",
-      },
-      {
-        id: 8,
-        title: "レストラン",
-        category: "施設",
-        image: "restaurant",
-      },
-      {
-        id: 9,
-        title: "病院",
-        category: "施設",
-        image: "hospital",
-      },
-      {
-        id: 10,
-        title: "山",
-        category: "自然",
-        image: "mountain",
-      },
-      { id: 11, title: "木", category: "自然", image: "tree" },
-      { id: 12, title: "川", category: "自然", image: "river" },
-    ],
-    [],
-  );
+  // カテゴリごとの画像キャッシュ
+  const imageCache = useRef<Record<string, ImageItem[]>>({});
 
-  const filterPictograms = useMemo(() => {
-    if (selectedCategoryKey === "すべて") {
-      return pictograms;
+  // 初回にカテゴリ件数を取得
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/category-count`)
+      .then((res) => res.json())
+      .then((data) => {
+        const fetched = data.categories as {
+          category: string;
+          count: number;
+        }[];
+
+        const mapped = [
+          {
+            key: "all",
+            title: "すべて",
+            icon: ICON_MAP["all"],
+            count: fetched.reduce((acc, cur) => acc + cur.count, 0),
+          },
+          ...fetched.map((cat) => ({
+            key: cat.category,
+            title: TITLE_MAP[cat.category] ?? cat.category,
+            icon: ICON_MAP[cat.category] ?? <CoffeeOutlined />,
+            count: cat.count,
+          })),
+        ];
+        setCategories(mapped);
+      })
+      .catch((err) => console.error("Error fetching category counts:", err));
+  }, []);
+
+  // カテゴリが切り替わったときの画像取得
+  useEffect(() => {
+    const key = selectedCategoryKey;
+
+    // キャッシュがあればそれを使う
+    if (imageCache.current[key]) {
+      setImages(imageCache.current[key]);
+      return;
     }
-    return pictograms.filter((p) => p.category === selectedCategoryKey);
-  }, [pictograms, selectedCategoryKey]);
+
+    // APIから画像取得してキャッシュ
+    const queryParam = `?category=${encodeURIComponent(key)}`;
+    fetch(`${import.meta.env.VITE_BACKEND_URL}/list${queryParam}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.images) {
+          imageCache.current[key] = data.images;
+          setImages(data.images);
+        }
+      })
+      .catch((err) => console.error("Error fetching images:", err));
+  }, [selectedCategoryKey]);
 
   return (
-    <>
-      <div className="pt-6">
-        <Tag category={selectedCategoryKey} />
-        <div className="flex pt-6">
-          <div className="grow">
-            <div className="grid grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4">
-              {filterPictograms.map((pictogram) => (
-                <Card
-                  key={pictogram.id}
-                  title={pictogram.title}
-                  image={pictogram.image}
-                />
-              ))}
-            </div>
-          </div>
-          <div className="hidden h-full flex-col gap-y-6 md:mx-6 lg:flex">
-            {categories.map((category) => (
-              <CategoryCard
-                key={category.key}
-                title={category.title}
-                icon={category.icon}
-                nun={category.count}
-                onClick={() => onCategorySelect(category.key)}
-                isSelected={category.key === selectedCategoryKey}
+    <div className="pt-6">
+      <Tag category={TITLE_MAP[selectedCategoryKey] ?? selectedCategoryKey} />
+      <div className="flex pt-6">
+        <div className="grow">
+          <div className="grid grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4">
+            {images.map((pictogram) => (
+              <Card
+                key={pictogram.id}
+                title={pictogram.title}
+                image={pictogram.image}
               />
             ))}
           </div>
         </div>
+
+        <div className="hidden h-full flex-col gap-y-6 md:mx-6 lg:flex">
+          {categories.map((cat) => (
+            <CategoryCard
+              key={cat.key}
+              title={cat.title}
+              icon={cat.icon}
+              nun={cat.count}
+              onClick={() => onCategorySelect(cat.key)}
+              isSelected={cat.key === selectedCategoryKey}
+            />
+          ))}
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 
